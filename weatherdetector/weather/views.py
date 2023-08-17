@@ -1,5 +1,24 @@
 from django.shortcuts import render
+import json
+import urllib.request
 
 
 def index(request):
-    return render(request, 'index.html')
+
+    if request.method == 'POST':
+        city = request.POST['city']
+        res = urllib.request.urlopen(
+            f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid=c2637836f3333ea0815275d37b75fb69'
+        ).read()
+        json_data = json.loads(res)
+        data = {
+            "country_code": str(json_data['sys']['country']),
+            "coordinate": str(json_data['coord']['lon']) + ' ' + str(json_data['coord']['lat']),
+            "temp": str(json_data['main']['temp'])+'k',
+            "pressure": str(json_data['main']['pressure']),
+            "humidity": str(json_data['main']['humidity']),
+        }
+    else:
+        city = ''
+        data = {}
+    return render(request, 'index.html', {'city': city, 'data': data})
